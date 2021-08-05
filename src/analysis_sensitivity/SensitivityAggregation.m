@@ -73,7 +73,7 @@ parfor run = 1:size(x_all, 1)
         fprintf("tension = %g (default)\n", w(w_map(w_full==3)));
     end
     
-    [~,y_default,y_perturb,y_sens,ymax_sens] = EnsembleSensitivity_rev5_gender(w,w_map,w_full,exptin,exptout,inputs_idx,gender_value);   
+    [~,y_default,y_perturb,y_sens,ymax_sens] = SensitivitySimulations(w,w_map,w_full,exptin,exptout,inputs_idx,gender_value);   
     
     y_default_all(:,:,:,run) = y_default;
     y_perturb_all(:,:,:,run) = y_perturb;
