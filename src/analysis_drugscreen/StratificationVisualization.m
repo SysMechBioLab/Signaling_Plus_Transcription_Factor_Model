@@ -3,23 +3,36 @@
 
 %% *Load Data*
 % load in filepaths
-homedir = "E:/Research/Aim3/ModelExpansion/";
-datadir = strcat(homedir, "ModelFitting_Ensemble/1_2_rev5_gender/");
-colordir = "E:/Research/Aim2/BrewerMap-master/";
-exptdir = "E:/Research/Aim2/ModelFitting/ModelFitting_AnsethData/data_processed_current/";
+homedir = pwd;
+datadir = strcat(homedir, "\\data\\training_results");
+colordir = strcat(homedir, "\\src\\utils");
+exptdir = strcat(homedir, "\\data\\training_datasets_Anseth");
 % exptdir_raw = "E:/Research/Aim2/ModelFitting/ModelFitting_AnsethData/data_raw/";
 addpath(datadir, colordir, exptdir);
 
 %%
-% load d(Activity) array: ga_sensitivity_results.mat
-
+% load d(Activity) array: ga_stratification_results.mat
 filename = "ga_stratification_results.mat";
-load(filename);
-y_perturb_single = y_full_all;      % perturbs x nodes x patients x runs
+if exist(filename, 'file')
+    load(filename);
+    y_perturb_single = y_full_all;      % perturbs x nodes x patients x runs
+else
+    error("MyFunction:fileNotFound", ...
+        "Error: cannot find file %s. Make sure that file is located in %s directory, or run src\\analysis_drugscreen\\StratificationAggregation.m.", ...
+        filename, datadir)
+end
+
 
 filename = "ga_stratification_doseresponse.mat";          % TAVR_A-H
 % filename = "ga_stratification_doseresponse_protonly.mat";   % TAVR_I-L
-load(filename);
+if exist(filename, "file")
+    load(filename);
+else
+    error("MyFunction:fileNotFound", ...
+        "Error: cannot find file %s. Make sure that file is located in %s directory, or run src\\analysis_drugscreen\\StratificationAggregation.m.", ...
+        filename, datadir)
+end
+
 if exist('y_perturb_prot', 'var')
     y_perturb_doseresponse = y_perturb_prot;
     clearvars y_perturb_prot
@@ -32,7 +45,13 @@ filename = "ga_speciesNames.mat";
 load(filename);
 
 filename = "ga_influence_topnodes.mat";
-load(filename);
+if exist(filename, "file")
+    load(filename);
+else
+    error("MyFunction:fileNotFound", ...
+        "Error: cannot find file %s. Make sure that file is located in %s directory, or run src\\analysis_sensitivity\\SensitivityVisualization.m.", ...
+        filename, datadir)
+end
 
 % load experimental data
 exptin = 'trainingdata_inputs_Anseth_11232020.mat';       % TAVR_A-H

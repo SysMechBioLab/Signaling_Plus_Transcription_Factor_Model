@@ -8,13 +8,13 @@
 rng('shuffle');
 clust = parcluster();
 parpool(clust, 26);
-% homedir = "D:/Research/Aim3/ModelExpansion/";
-% datadir = strcat(homedir, "ModelFitting_Ensemble/1_2_rev5_gender/");
-% clustdir = "D:/Research/Aim2/ModelFitting/ModelFitting_AnsethData/data_processed_current/";
-% addpath(datadir, clustdir)
+homedir = pwd;
+datadir = strcat(homedir, "\\data\\training_results\\ga_ensemble\\");
+clustdir = strcat(homedir, "\\data\\training_datasets_Anseth\\");
+utilsdir = strcat(homedir, "\\src\\utils\\");
+addpath(datadir, clustdir, utilsdir)
 
-% filedelim = strcat(datadir, "ga_finalset*");
-filedelim = "ga_finalset*";
+filedelim = strcat(datadir, "ga_finalset*");
 datastr = dir(filedelim);
 datanames = char(datastr.name);
 for file = 1:size(datanames,1)
@@ -31,33 +31,34 @@ end
 
 
 % Set static parameters for simulation
-clusterpath = "ClusterAnalysis_rev5.xlsx";
+clusterpath = "ClusterAnalysis_rev6.xlsx";
 sheet = "reactions";
 inputs_idx = [1 2 8 10 4 5 6];
 [w_map, w_full] = mapClusters(clusterpath, sheet, inputs_idx);
 
-% exptin = "trainingdata_inputs_Anseth_11232020.mat";   % TAVR_A-H
-exptin = "testingdata_inputs_Anseth_12312020.mat";      % TAVR_I-L
+exptin = "trainingdata_inputs_Anseth_11232020.mat";   % TAVR_A-H
+% exptin = "testingdata_inputs_Anseth_12312020.mat";      % TAVR_I-L
 exptout = "trainingdata_outputs_Anseth_12042020.mat";
 gender_value = 0.1;
 
 tension = 0;
 
 inflpath = "ga_influence_topnodes.mat";
-load(inflpath);
+if exist(inflpath, "file")
+    load(inflpath);
+else
+    error("MyFunction:fileNotFound", ...
+        "Error: cannot find file %s. Make sure that file is located in %s directory, or run src\\analysis_sensitivity\\SensitivityVisualization.m.", ...
+        inflpath, datadir)
+end
 perturb_lvls = flip(0.2:0.2:0.8);
-
-
-% remove patient-derived inputs (for rev5_scaling_inputs ONLY!!!)
-% x_all_setonly = x_all;
-% x_all_setonly(:, inputs_idx) = [];
 
 % run simulations for each set
 y_perturb_prot = zeros(length(influence_idx_toporder), ...   % perturbs
-                      151, ...                              % nodes
-                      length(perturb_lvls)+1, ...           % doses
-                      8, ...                                % sera
-                      size(x_all,1));                       % parameter set                        
+    151, ...                              % nodes
+    length(perturb_lvls)+1, ...           % doses
+    8, ...                                % sera
+    size(x_all,1));                       % parameter set
 
 parfor run = 1:size(x_all, 1)
     w = x_all(run,:);
@@ -101,8 +102,10 @@ w_nofit(w_map(w_full<=11)) = 0.1;
     influence_idx_toporder, ...
     perturb_lvls);
 
-save("ga_stratification_doseresponse_protonly.mat", "y_perturb_prot");
-save("ga_stratification_doseresponse_protonly_nofit.mat", "y_perturb_nofit");
+% save(strcat(homedir, "\\data\\training_results\\ga_stratification_results.mat"), "y_perturb");     % if using StratificationSimulation_singledose.m
+% save(strcat(homedir, "\\data\\training_results\\ga_stratification_results_nofit.mat"), "y_perturb_nofit");
+save(strcat(homedir, "\\data\\training_results\\ga_stratification_doseresponse.mat"), "y_perturb");     % if using StratificationSImulation_doseresponse.m
+save(strcat(homedir, "\\data\\training_results\\ga_stratification_doseresponse_nofit.mat"), "y_perturb_nofit");
 
 delete(gcp)
 
